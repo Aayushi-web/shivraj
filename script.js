@@ -839,7 +839,7 @@ document.addEventListener('DOMContentLoaded', function() {
     contactCta.addEventListener('click', (e) => {
       e.preventDefault();
       createQuickPopup('Get In Touch', 'We\'re happy to help you find your perfect room', [
-        { text: '📞 Call +91 9217234443', href: 'tel:+919217234443', bg: '#C4622D' },
+        { text: '📞 Call +919217234443', href: 'tel:+919217234443', bg: '#C4622D' },
         { text: '📧 Email contact@shivrajhomes.in', href: 'mailto:contact@shivrajhomes.in', bg: '#1E2D5E' }
       ]);
     });
