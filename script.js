@@ -323,56 +323,9 @@ document.addEventListener('DOMContentLoaded', function() {
   const contactForm = document.getElementById('contactForm');
   const contactSuccess = document.getElementById('contactSuccess');
   const contactBack = document.getElementById('contactBack');
-  const GOOGLE_SHEET_URL = 'https://script.google.com/macros/s/AKfycbxyIfLZ1nVR_h3cMrvd5BTWzytx0ahEa_Fv-ZLq548waTxmqBEZ_uEfWoqETkvWKuEH/exec';
-
-  function toDateInputValue(dateObj) {
-    const y = dateObj.getFullYear();
-    const m = String(dateObj.getMonth() + 1).padStart(2, '0');
-    const d = String(dateObj.getDate()).padStart(2, '0');
-    return `${y}-${m}-${d}`;
-  }
-
-  function isFutureDateOnly(dateStr) {
-    if (!dateStr) return true;
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    const selected = new Date(`${dateStr}T00:00:00`);
-    return selected > today;
-  }
-
-  const tomorrow = new Date();
-  tomorrow.setDate(tomorrow.getDate() + 1);
-  const minFutureDate = toDateInputValue(tomorrow);
-  const contactMoveInField = document.getElementById('c-move-in');
-  const locationMoveInField = document.getElementById('locExpectedMoveIn');
-  if (contactMoveInField) contactMoveInField.min = minFutureDate;
-  if (locationMoveInField) locationMoveInField.min = minFutureDate;
-
-  async function sendFormDataToGoogleSheet(payload) {
-    const normalizedPayload = {
-      source: 'Website Form',
-      expectedMoveIn: '',
-      expected_move_in: '',
-      expectedMovein: '',
-      ...payload
-    };
-
-    normalizedPayload.expected_move_in = normalizedPayload.expectedMoveIn || '';
-    normalizedPayload.expectedMovein = normalizedPayload.expectedMoveIn || '';
-    const body = JSON.stringify(normalizedPayload);
-
-    await fetch(GOOGLE_SHEET_URL, {
-      method: 'POST',
-      mode: 'no-cors',
-      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-      body
-    });
-
-    return { ok: true, mode: 'no-cors' };
-  }
   
   if (contactForm) {
-    contactForm.addEventListener('submit', async function(e) {
+    contactForm.addEventListener('submit', function(e) {
       e.preventDefault();
       let valid = true;
       contactForm.querySelectorAll('[required]').forEach(field => {
@@ -382,38 +335,12 @@ document.addEventListener('DOMContentLoaded', function() {
           valid = false;
         }
       });
-
-      const moveInField = document.getElementById('c-move-in');
-      if (moveInField && moveInField.value && !isFutureDateOnly(moveInField.value)) {
-        moveInField.style.borderColor = '#e53e3e';
-        moveInField.addEventListener('input', () => { moveInField.style.borderColor = ''; }, { once: true });
-        valid = false;
-      }
-
       if (!valid) return;
-
-      const contactFormData = {
-        name: document.getElementById('c-name')?.value || '',
-        phone: document.getElementById('c-phone')?.value || '',
-        email: document.getElementById('c-email')?.value || '',
-        roomType: document.getElementById('c-type')?.value || '',
-        expectedMoveIn: document.getElementById('c-move-in')?.value || '',
-        budget: document.getElementById('c-budget')?.value || '',
-        message: document.getElementById('c-msg')?.value || '',
-        source: 'Contact Form',
-        timestamp: new Date().toISOString()
-      };
       
       const btn = contactForm.querySelector('.contact__submit');
       const originalText = btn.innerHTML;
       btn.innerHTML = 'Sending...';
       btn.disabled = true;
-
-      try {
-        await sendFormDataToGoogleSheet(contactFormData);
-      } catch (error) {
-        console.error('Error sending contact form to Google Sheet:', error);
-      }
       
       setTimeout(() => {
         contactForm.style.display = 'none';
@@ -448,8 +375,8 @@ document.addEventListener('DOMContentLoaded', function() {
       price: '₹9,000',
       mapSrc: 'https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3506.2!2d77.0266!3d28.5021!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0%3A0x0!2zMjjCsDMwJzA3LjYiTiA3N8KwMDEnMzUuOCJF!5e0!3m2!1sen!2sin!4v1234567890',
       properties: [
-        { name: 'Shivraj Homes - 21C', location: 'Sector 21C, Gurugram', price: '₹9,000', badge: 'Most Popular', image: '1774162250089.png', amenities: ['Wi-Fi', 'AC', 'Meals', 'Parking'], phone: '+91 96506 03063' },
-        { name: 'Shivraj Homes - Dhundahera', location: 'Dhundahera, Gurugram', price: '₹8,500', badge: 'Budget Friendly', image: '1774162263990.png', amenities: ['Wi-Fi', 'CCTV', 'Parking'], phone: '+91 96506 03063' }
+        { name: 'Shivraj Homes - 21C', location: 'Sector 21C, Gurugram', price: '₹9,000', badge: 'Most Popular', image: '1774162250089.png', amenities: ['Wi-Fi', 'AC', 'Meals', 'Parking'], phone: '+91 ' },
+        { name: 'Shivraj Homes - Dhundahera', location: 'Dhundahera, Gurugram', price: '₹8,500', badge: 'Budget Friendly', image: '1774162263990.png', amenities: ['Wi-Fi', 'CCTV', 'Parking'], phone: '+91 9217234443' }
       ]
     },
     sector22: {
@@ -460,9 +387,9 @@ document.addEventListener('DOMContentLoaded', function() {
       price: '₹9,500',
       mapSrc: 'https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3506.5!2d77.0290!3d28.5050!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0%3A0x0!2zMjjCsDMwJzE4LjAiTiA3N8KwMDEnNDQuMCJF!5e0!3m2!1sen!2sin!4v1234567890',
       properties: [
-        { name: 'Shivraj Homes - 22A', location: 'Sector 22A, Gurugram', price: '₹9,500', badge: 'Premium', image: '1774162307006.png', amenities: ['Wi-Fi', 'AC', 'Meals', 'Lift'], phone: '+91 96506 03063' },
-        { name: 'Shivraj Homes - 22B', location: 'Sector 22B, Gurugram', price: '₹9,000', badge: 'Best Value', image: '1774162320908.png', amenities: ['Wi-Fi', 'CCTV', 'Meals'], phone: '+91 96506 03063' },
-        { name: 'Shivraj Homes - Mullahera', location: 'Mullahera, Gurugram', price: '₹8,000', badge: 'Budget', image: '181627717.jpg', amenities: ['Wi-Fi', 'Parking', 'Power Backup'], phone: '+91 96506 03063' }
+        { name: 'Shivraj Homes - 22A', location: 'Sector 22A, Gurugram', price: '₹9,500', badge: 'Premium', image: '1774162307006.png', amenities: ['Wi-Fi', 'AC', 'Meals', 'Lift'], phone: '+91 99217234443' },
+        { name: 'Shivraj Homes - 22B', location: 'Sector 22B, Gurugram', price: '₹9,000', badge: 'Best Value', image: '1774162320908.png', amenities: ['Wi-Fi', 'CCTV', 'Meals'], phone: '+91 9217234443' },
+        { name: 'Shivraj Homes - Mullahera', location: 'Mullahera, Gurugram', price: '₹8,000', badge: 'Budget', image: '181627717.jpg', amenities: ['Wi-Fi', 'Parking', 'Power Backup'], phone: '+91 9217234443' }
       ]
     },
     sector23: {
@@ -473,7 +400,7 @@ document.addEventListener('DOMContentLoaded', function() {
       price: '₹10,000',
       mapSrc: 'https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3507.0!2d77.0320!3d28.5100!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0%3A0x0!2zMjjCsDMwJzM2LjAiTiA3N8KwMDEnNTUuMCJF!5e0!3m2!1sen!2sin!4v1234567890',
       properties: [
-        { name: 'Shivraj Homes - 23A', location: 'Sector 23A, Gurugram', price: '₹10,000', badge: 'New Launch', image: '1.jpg', amenities: ['Wi-Fi', 'AC', 'Meals', 'Lift'], phone: '+91 96506 03063' }
+        { name: 'Shivraj Homes - 23A', location: 'Sector 23A, Gurugram', price: '₹10,000', badge: 'New Launch', image: '1.jpg', amenities: ['Wi-Fi', 'AC', 'Meals', 'Lift'], phone: '+91 9217234443' }
       ]
     }
   };
@@ -597,7 +524,7 @@ document.addEventListener('DOMContentLoaded', function() {
   
     // Location popup form with Google Sheets integration
   if (locForm) {
-    locForm.addEventListener('submit', async function(e) {
+    locForm.addEventListener('submit', function(e) {
       e.preventDefault();
       
       let valid = true;
@@ -612,13 +539,6 @@ document.addEventListener('DOMContentLoaded', function() {
       if (!phoneField.value.trim()) {
         phoneField.style.borderColor = '#e53e3e';
         phoneField.addEventListener('input', () => { phoneField.style.borderColor = ''; }, { once: true });
-        valid = false;
-      }
-
-      const locMoveInField = document.getElementById('locExpectedMoveIn');
-      if (locMoveInField && locMoveInField.value && !isFutureDateOnly(locMoveInField.value)) {
-        locMoveInField.style.borderColor = '#e53e3e';
-        locMoveInField.addEventListener('input', () => { locMoveInField.style.borderColor = ''; }, { once: true });
         valid = false;
       }
       
@@ -638,20 +558,24 @@ document.addEventListener('DOMContentLoaded', function() {
         phone: document.getElementById('locPhone').value,
         email: document.getElementById('locEmail').value || '',
         roomType: document.getElementById('locRoomType').value,
-        expectedMoveIn: document.getElementById('locExpectedMoveIn')?.value || '',
         budget: document.getElementById('locBudget').value || '',
         message: document.getElementById('locMessage').value || '',
         source: 'Location Popup Form',
         property: currentPropertyName,
         timestamp: new Date().toISOString()
       };
-      console.log('Location popup form data:', formData);
       
-      try {
-        await sendFormDataToGoogleSheet(formData);
-      } catch (error) {
-        console.error('Error sending location form to Google Sheet:', error);
-      }
+      // REPLACE THIS URL WITH YOUR GOOGLE APPS SCRIPT WEB APP URL
+      const GOOGLE_SHEET_URL = 'https://script.google.com/macros/s/AKfycbxbENPBstQxM_LDQQC2ViWEAmA7O9apJF4-aVHebc3Llu851DGwpTgcImYL3APfNrdo/exec';
+      
+      // Send data to Google Sheets
+      fetch(GOOGLE_SHEET_URL, {
+        method: 'POST',
+        mode: 'no-cors',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(formData)
+      })
+      .catch(error => console.error('Error sending to Google Sheet:', error));
       
       // Show success message (even if sheet fails, user gets confirmation)
       setTimeout(() => {
@@ -659,7 +583,7 @@ document.addEventListener('DOMContentLoaded', function() {
         if (locSuccess) locSuccess.classList.add('show');
         btn.innerHTML = originalText;
         btn.disabled = false;
-      }, 5000);
+      }, 1000);
     });
   }
   
@@ -708,7 +632,7 @@ document.addEventListener('DOMContentLoaded', function() {
     'what amenities do you offer?': `We offer <b>20+ premium amenities</b> including:\n📶 High-Speed Wi-Fi\n❄️ AC Rooms\n🍽️ Tasty Meals\n🧹 Daily Housekeeping\n📷 CCTV Security\n🛗 Lift & Parking\n🔋 Power Backup\n🎮 Indoor Games\n...and much more!`,
     'food menu': `🍽️ <b>Our Daily Food Menu</b> 🍽️\n\n<b>Breakfast (8:00 - 10:00 AM):</b>\n🥛 Milk/Cornflakes\n🍞 Bread Butter/Jam\n🌯 Aloo Paratha + Curd\n☕ Tea/Coffee\n\n<b>Lunch (1:00 - 3:00 PM):</b>\n🍚 Steam Rice\n🍛 Dal Tadka\n🥘 Seasonal Vegetable\n🍞 Roti\n🥗 Salad + Pickle\n\n<b>Evening Snacks (5:00 - 6:00 PM):</b>\n☕ Tea/Coffee\n🍪 Biscuits/Namkeen\n🥪 Sometimes Sandwiches/Pakora\n\n<b>Dinner (8:00 - 10:00 PM):</b>\n🍚 Jeera Rice\n🍛 Paneer/Chicken Curry (alternate days)\n🍞 Roti/Naan\n🥗 Salad\n🍨 Dessert (on Sundays)\n\n<b>Special Weekly Items:</b>\n• Monday: Chole Bhature\n• Wednesday: Pav Bhaji\n• Friday: Biryani\n• Sunday: Special Thali + Dessert\n\n🍽️ <i>All meals are home-style, hygienic, and made fresh daily!</i>`,
     'where are you located?': `📍 We have properties across <b>7 prime locations</b>:\n\n• <b>Sector 21C</b>, Dhundahera, Gurugram\n• <b>Sector 22</b>, Gurugram\n• <b>Sector 22A</b>, Gurugram\n• <b>Sector 22B</b>, Gurugram\n• <b>Mullahera</b>, Gurugram\n• <b>Sector 23A</b>, Gurugram\n\n📞 Call us to check availability in your preferred area!`,
-    'i want to book a visit': `Great! 🎉 You can book a free visit by calling us:\n📞 <b>+91 96506 03063</b>\n📞 <b>+91 82228 87210</b>\n\nOr use the <b>Contact Us</b> form on our website. We'll confirm your slot within 1 hour!`,
+    'i want to book a visit': `Great! 🎉 You can book a free visit by calling us:\n📞 <b>+91 9217234443</b>\n📞 <b>+91 82228 87210</b>\n\nOr use the <b>Contact Us</b> form on our website. We'll confirm your slot within 1 hour!`,
     'how do i contact you?': `You can reach us through:\n📞 <b>+91 9217234443</b>\n📧 <b>contact@shivrajhomes.in</b>\n💬 WhatsApp button on the left\n\nWe're available <b>Mon–Sat, 9AM–8PM</b>.`
   };
   const defaultResponse = `Thanks for your message! 😊 Our team will get back to you shortly.\n\nFor immediate help, call us at <b>+91 92172 34443</b> or click the WhatsApp button.`;
@@ -811,7 +735,7 @@ document.addEventListener('DOMContentLoaded', function() {
   }
   
   if (leadSubmit) {
-    leadSubmit.addEventListener('click', async () => {
+    leadSubmit.addEventListener('click', () => {
       let valid = true;
       const nameField = document.getElementById('leadName');
       const phoneField = document.getElementById('leadPhone');
@@ -834,24 +758,9 @@ document.addEventListener('DOMContentLoaded', function() {
       }
       
       if (!valid) return;
-
-      const leadFormData = {
-        name: document.getElementById('leadName')?.value || '',
-        phone: document.getElementById('leadPhone')?.value || '',
-        email: document.getElementById('leadEmail')?.value || '',
-        query: document.getElementById('leadQuery')?.value || '',
-        source: 'Lead Popup Form',
-        timestamp: new Date().toISOString()
-      };
       
       leadSubmit.textContent = 'Submitting...';
       leadSubmit.disabled = true;
-
-      try {
-        await sendFormDataToGoogleSheet(leadFormData);
-      } catch (error) {
-        console.error('Error sending lead form to Google Sheet:', error);
-      }
       
       setTimeout(() => {
         if (leadForm) leadForm.style.display = 'none';
@@ -930,7 +839,7 @@ document.addEventListener('DOMContentLoaded', function() {
     contactCta.addEventListener('click', (e) => {
       e.preventDefault();
       createQuickPopup('Get In Touch', 'We\'re happy to help you find your perfect room', [
-        { text: '📞 Call +91 96506 03063', href: 'tel:+919650603063', bg: '#C4622D' },
+        { text: '📞 Call +91 9217234443', href: 'tel:+919217234443', bg: '#C4622D' },
         { text: '📧 Email contact@shivrajhomes.in', href: 'mailto:contact@shivrajhomes.in', bg: '#1E2D5E' }
       ]);
     });
