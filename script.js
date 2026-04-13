@@ -323,9 +323,56 @@ document.addEventListener('DOMContentLoaded', function() {
   const contactForm = document.getElementById('contactForm');
   const contactSuccess = document.getElementById('contactSuccess');
   const contactBack = document.getElementById('contactBack');
+  const GOOGLE_SHEET_URL = 'https://script.google.com/macros/s/AKfycbxyIfLZ1nVR_h3cMrvd5BTWzytx0ahEa_Fv-ZLq548waTxmqBEZ_uEfWoqETkvWKuEH/exec';
+
+  function toDateInputValue(dateObj) {
+    const y = dateObj.getFullYear();
+    const m = String(dateObj.getMonth() + 1).padStart(2, '0');
+    const d = String(dateObj.getDate()).padStart(2, '0');
+    return `${y}-${m}-${d}`;
+  }
+
+  function isFutureDateOnly(dateStr) {
+    if (!dateStr) return true;
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const selected = new Date(`${dateStr}T00:00:00`);
+    return selected > today;
+  }
+
+  const tomorrow = new Date();
+  tomorrow.setDate(tomorrow.getDate() + 1);
+  const minFutureDate = toDateInputValue(tomorrow);
+  const contactMoveInField = document.getElementById('c-move-in');
+  const locationMoveInField = document.getElementById('locExpectedMoveIn');
+  if (contactMoveInField) contactMoveInField.min = minFutureDate;
+  if (locationMoveInField) locationMoveInField.min = minFutureDate;
+
+  async function sendFormDataToGoogleSheet(payload) {
+    const normalizedPayload = {
+      source: 'Website Form',
+      expectedMoveIn: '',
+      expected_move_in: '',
+      expectedMovein: '',
+      ...payload
+    };
+
+    normalizedPayload.expected_move_in = normalizedPayload.expectedMoveIn || '';
+    normalizedPayload.expectedMovein = normalizedPayload.expectedMoveIn || '';
+    const body = JSON.stringify(normalizedPayload);
+
+    await fetch(GOOGLE_SHEET_URL, {
+      method: 'POST',
+      mode: 'no-cors',
+      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+      body
+    });
+
+    return { ok: true, mode: 'no-cors' };
+  }
   
   if (contactForm) {
-    contactForm.addEventListener('submit', function(e) {
+    contactForm.addEventListener('submit', async function(e) {
       e.preventDefault();
       let valid = true;
       contactForm.querySelectorAll('[required]').forEach(field => {
@@ -335,12 +382,38 @@ document.addEventListener('DOMContentLoaded', function() {
           valid = false;
         }
       });
+
+      const moveInField = document.getElementById('c-move-in');
+      if (moveInField && moveInField.value && !isFutureDateOnly(moveInField.value)) {
+        moveInField.style.borderColor = '#e53e3e';
+        moveInField.addEventListener('input', () => { moveInField.style.borderColor = ''; }, { once: true });
+        valid = false;
+      }
+
       if (!valid) return;
+
+      const contactFormData = {
+        name: document.getElementById('c-name')?.value || '',
+        phone: document.getElementById('c-phone')?.value || '',
+        email: document.getElementById('c-email')?.value || '',
+        roomType: document.getElementById('c-type')?.value || '',
+        expectedMoveIn: document.getElementById('c-move-in')?.value || '',
+        budget: document.getElementById('c-budget')?.value || '',
+        message: document.getElementById('c-msg')?.value || '',
+        source: 'Contact Form',
+        timestamp: new Date().toISOString()
+      };
       
       const btn = contactForm.querySelector('.contact__submit');
       const originalText = btn.innerHTML;
       btn.innerHTML = 'Sending...';
       btn.disabled = true;
+
+      try {
+        await sendFormDataToGoogleSheet(contactFormData);
+      } catch (error) {
+        console.error('Error sending contact form to Google Sheet:', error);
+      }
       
       setTimeout(() => {
         contactForm.style.display = 'none';
@@ -524,7 +597,7 @@ document.addEventListener('DOMContentLoaded', function() {
   
     // Location popup form with Google Sheets integration
   if (locForm) {
-    locForm.addEventListener('submit', function(e) {
+    locForm.addEventListener('submit', async function(e) {
       e.preventDefault();
       
       let valid = true;
@@ -539,6 +612,13 @@ document.addEventListener('DOMContentLoaded', function() {
       if (!phoneField.value.trim()) {
         phoneField.style.borderColor = '#e53e3e';
         phoneField.addEventListener('input', () => { phoneField.style.borderColor = ''; }, { once: true });
+        valid = false;
+      }
+
+      const locMoveInField = document.getElementById('locExpectedMoveIn');
+      if (locMoveInField && locMoveInField.value && !isFutureDateOnly(locMoveInField.value)) {
+        locMoveInField.style.borderColor = '#e53e3e';
+        locMoveInField.addEventListener('input', () => { locMoveInField.style.borderColor = ''; }, { once: true });
         valid = false;
       }
       
@@ -558,24 +638,20 @@ document.addEventListener('DOMContentLoaded', function() {
         phone: document.getElementById('locPhone').value,
         email: document.getElementById('locEmail').value || '',
         roomType: document.getElementById('locRoomType').value,
+        expectedMoveIn: document.getElementById('locExpectedMoveIn')?.value || '',
         budget: document.getElementById('locBudget').value || '',
         message: document.getElementById('locMessage').value || '',
         source: 'Location Popup Form',
         property: currentPropertyName,
         timestamp: new Date().toISOString()
       };
+      console.log('Location popup form data:', formData);
       
-      // REPLACE THIS URL WITH YOUR GOOGLE APPS SCRIPT WEB APP URL
-      const GOOGLE_SHEET_URL = 'https://script.google.com/macros/s/AKfycbxbENPBstQxM_LDQQC2ViWEAmA7O9apJF4-aVHebc3Llu851DGwpTgcImYL3APfNrdo/exec';
-      
-      // Send data to Google Sheets
-      fetch(GOOGLE_SHEET_URL, {
-        method: 'POST',
-        mode: 'no-cors',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(formData)
-      })
-      .catch(error => console.error('Error sending to Google Sheet:', error));
+      try {
+        await sendFormDataToGoogleSheet(formData);
+      } catch (error) {
+        console.error('Error sending location form to Google Sheet:', error);
+      }
       
       // Show success message (even if sheet fails, user gets confirmation)
       setTimeout(() => {
@@ -583,7 +659,7 @@ document.addEventListener('DOMContentLoaded', function() {
         if (locSuccess) locSuccess.classList.add('show');
         btn.innerHTML = originalText;
         btn.disabled = false;
-      }, 1000);
+      }, 5000);
     });
   }
   
@@ -735,7 +811,7 @@ document.addEventListener('DOMContentLoaded', function() {
   }
   
   if (leadSubmit) {
-    leadSubmit.addEventListener('click', () => {
+    leadSubmit.addEventListener('click', async () => {
       let valid = true;
       const nameField = document.getElementById('leadName');
       const phoneField = document.getElementById('leadPhone');
@@ -758,9 +834,24 @@ document.addEventListener('DOMContentLoaded', function() {
       }
       
       if (!valid) return;
+
+      const leadFormData = {
+        name: document.getElementById('leadName')?.value || '',
+        phone: document.getElementById('leadPhone')?.value || '',
+        email: document.getElementById('leadEmail')?.value || '',
+        query: document.getElementById('leadQuery')?.value || '',
+        source: 'Lead Popup Form',
+        timestamp: new Date().toISOString()
+      };
       
       leadSubmit.textContent = 'Submitting...';
       leadSubmit.disabled = true;
+
+      try {
+        await sendFormDataToGoogleSheet(leadFormData);
+      } catch (error) {
+        console.error('Error sending lead form to Google Sheet:', error);
+      }
       
       setTimeout(() => {
         if (leadForm) leadForm.style.display = 'none';
