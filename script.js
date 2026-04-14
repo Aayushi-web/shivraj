@@ -375,7 +375,7 @@ document.addEventListener('DOMContentLoaded', function() {
       price: '₹9,000',
       mapSrc: 'https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3506.2!2d77.0266!3d28.5021!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0%3A0x0!2zMjjCsDMwJzA3LjYiTiA3N8KwMDEnMzUuOCJF!5e0!3m2!1sen!2sin!4v1234567890',
       properties: [
-        { name: 'Shivraj Homes - 21C', location: 'Sector 21C, Gurugram', price: '₹9,000', badge: 'Most Popular', image: '1774162250089.png', amenities: ['Wi-Fi', 'AC', 'Meals', 'Parking'], phone: '+91 ' },
+        { name: 'Shivraj Homes - 21C', location: 'Sector 21C, Gurugram', price: '₹9,000', badge: 'Most Popular', image: '1774162250089.png', amenities: ['Wi-Fi', 'AC', 'Meals', 'Parking'], phone: '+91 9217234443' },
         { name: 'Shivraj Homes - Dhundahera', location: 'Dhundahera, Gurugram', price: '₹8,500', badge: 'Budget Friendly', image: '1774162263990.png', amenities: ['Wi-Fi', 'CCTV', 'Parking'], phone: '+91 9217234443' }
       ]
     },
